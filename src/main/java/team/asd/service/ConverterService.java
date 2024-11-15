@@ -3,42 +3,53 @@ package team.asd.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 public class ConverterService implements IsConverterService {
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	@Override
 	public String convertIntegerIntoString(Integer value) {
-		return value == null ? null : value.toString();
+		return value != null ? String.valueOf(value) : null;
 	}
 
 	@Override
 	public Integer convertStringIntoInteger(String value) {
-		if (value == null) return null;
-		try {
-			return Integer.parseInt(value);
-		} catch (NumberFormatException e) {
-			throw new NumberFormatException("Provided string is not a valid integer: " + value);
-		}
+		return Optional.ofNullable(value)
+				.map(val -> {
+					try {
+						return Integer.parseInt(val);
+					} catch (NumberFormatException e) {
+						throw new NumberFormatException(e.getMessage());
+					}
+				})
+				.orElse(null);
 	}
 
 	@Override
 	public Double convertStringIntoDouble(String value) {
-		if (value == null) return null;
-		try {
-			return Double.parseDouble(value);
-		} catch (NumberFormatException e) {
-			throw new NumberFormatException("Provided string is not a valid double: " + value);
-		}
+		return Optional.ofNullable(value)
+				.map(val -> {
+					try {
+						return Double.parseDouble(val);
+					} catch (NumberFormatException e) {
+						throw new NumberFormatException(e.getMessage());
+					}
+				})
+				.orElse(null);
 	}
 
 	@Override
 	public LocalDate convertStringIntoLocalDate(String dateString) throws DateTimeParseException {
-		if (dateString == null) return null;
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") ;
-		try {
-			return LocalDate.parse(dateString, formatter);
-		} catch (DateTimeParseException e) {
-			throw new DateTimeParseException("Provided string is not a valid date: " + dateString, dateString, 0);
-		}
+		// Використання Optional для обробки null і конвертація String у LocalDate
+		return Optional.ofNullable(dateString)
+				.map(value -> {
+					try {
+						return LocalDate.parse(value, DATE_FORMATTER);
+					} catch (DateTimeParseException e) {
+						throw new DateTimeParseException(e.getMessage(), e.getParsedString(), e.getErrorIndex());
+					}
+				})
+				.orElse(null);
 	}
 }
